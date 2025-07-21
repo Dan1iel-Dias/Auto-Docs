@@ -6,14 +6,20 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager  # ✅
 import time
 
 def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
-    caminho_driver = r"C:\Users\daniel.santos\Desktop\automaçaopx\chromedriver-win64\chromedriver-win64\chromedriver.exe"
-
+    # ✅ Opções para headless (sem tela)
     options = Options()
-    # options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(caminho_driver), options=options)
+    options.add_argument("--headless")  # necessário para Streamlit
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920x1080")
+
+    # ✅ Usa o webdriver manager para obter e instalar o driver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     wait = WebDriverWait(driver, 15)
 
     try:
@@ -37,8 +43,6 @@ def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
         elif fase == "EPT":
             link_tecnico = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@href, 'moduloID=65')]")))
             link_tecnico.click()
-        else:
-            print(f"⚠️ Fase '{fase}' inválida. Continuando sem troca de módulo.")
 
         # F2 > Busca nome aluno
         ActionChains(driver).send_keys(Keys.F2).perform()
@@ -55,7 +59,6 @@ def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
         link_periodo.click()
         time.sleep(2)
 
-        # Coleta matrículas
         wait.until(EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@onclick, 'matriculaturma.do')]")))
         linhas = driver.find_elements(By.XPATH, "//tr[contains(@onclick, 'matriculaturma.do')]")
         matriculas = []
@@ -67,26 +70,20 @@ def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
                 matriculas.append((periodo, url))
 
         if not matriculas:
-            print("⚠️ Nenhuma matrícula encontrada.")
             return None
 
-        # Vai para a matrícula mais recente
         matriculas.sort(key=lambda x: x[0], reverse=True)
         driver.get("https://mentorweb.pedreira.org" + matriculas[0][1])
         time.sleep(2)
 
-        # Coleta o nome do curso
         try:
             elemento_curso = wait.until(EC.presence_of_element_located((
-                By.XPATH,
-                "//td[contains(text(), 'Curso')]/following-sibling::td[1]/a"
+                By.XPATH, "//td[contains(text(), 'Curso')]/following-sibling::td[1]/a"
             )))
             nome_curso = elemento_curso.text.strip()
         except:
             nome_curso = "CURSO NÃO ENCONTRADO"
 
-
-        # Vai para "Resultado nas fases"
         link_resultado = wait.until(EC.presence_of_element_located(
             (By.XPATH, "//a[contains(@onclick, 'ingressoresultadofaseman.do')]")
         ))
@@ -94,7 +91,6 @@ def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
         driver.get("https://mentorweb.pedreira.org" + url_resultado)
         time.sleep(2)
 
-        # Coleta fases
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.delimitador")))
         linhas_fase = driver.find_elements(By.CSS_SELECTOR, "table.delimitador tbody tr")
 
@@ -130,24 +126,3 @@ def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
 
     finally:
         driver.quit()
-
-
-
-def main():
-    nome_aluno = "Daniel dias tome dos santos"
-    usuario = "daniel.santos@pedreira.org"
-    senha = "5673D15d@"
-
-    print(f"\n🔍 Consultando aluno: {nome_aluno}")
-    dados = obter_situacao_resultado_com_login(nome_aluno, usuario, senha)
-
-    if dados and "fases" in dados:
-        print(f"\n📄 Curso: {dados['curso']}")
-        for item in dados['fases']:
-            print(f"  • Período: {item['periodo_letivo']} | Fase: {item['fase']} | Situação: {item['situacao_resultado']}")
-    else:
-        print(f"\n⚠️ Nenhum dado retornado para {nome_aluno}.")
-
-
-if __name__ == "__main__":
-    main()
