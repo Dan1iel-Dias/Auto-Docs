@@ -12,7 +12,7 @@ def buscar_documentos_aluno(nome_aluno, usuario, senha):
     caminho_driver = r"C:\Users\daniel.santos\Desktop\automaçaopx\chromedriver-win64\chromedriver-win64\chromedriver.exe"
 
     options = Options()
-    # options.add_argument("--headless")  # descomente para rodar em modo invisível
+    options.add_argument("--headless")  # descomente para rodar em modo invisível
     driver = webdriver.Chrome(service=Service(caminho_driver), options=options)
     wait = WebDriverWait(driver, 15)
 
