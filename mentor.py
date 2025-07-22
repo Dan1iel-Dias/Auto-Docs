@@ -1,4 +1,5 @@
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -9,12 +10,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 import time
 
 def obter_situacao_resultado_com_login(nome_aluno, usuario, senha, fase):
-    caminho_driver = r"C:\Users\daniel.santos\Desktop\automaçaopx\chromedriver-win64\chromedriver-win64\chromedriver.exe"
-
     options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(caminho_driver), options=options)
+
+    # Usar webdriver-manager para baixar automaticamente o ChromeDriver
+    driver = webdriver.Chrome(service=Service("chromedriver.exe"), options=options)
     wait = WebDriverWait(driver, 15)
+
 
     try:
         driver.get("https://mentorweb.pedreira.org/ceap/inicial.do?pcaes=0f595d7f836bd3dc4a7b90184b310a25")

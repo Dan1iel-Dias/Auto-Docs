@@ -32,14 +32,14 @@ if not st.session_state.autenticado:
         else:
             st.error("❌ Usuário ou senha inválidos.")
     st.stop()
+else:
+    # Interface principal após login
+    st.title("🔍 Automações - Secretaria")
+    st.write(f"Bem-vindo, **{st.session_state.usuario}**!")
 
-# Interface principal após login
-st.title("🔍 Automações - Secretaria")
-st.write(f"Bem-vindo, **{st.session_state.usuario}**!")
-
-nome = st.text_input("Digite o nome do aluno")
-fase = st.selectbox("Qual fase o aluno pertence?", ["", "ECI", "EPT"])
-modelo_input = st.text_input("Digite o nome do modelo (ex: declaracao_de_contraturno)")
+    nome = st.text_input("Digite o nome do aluno")
+    fase = st.selectbox("Qual fase o aluno pertence?", ["", "ECI", "EPT"])
+    modelo_input = st.text_input("Digite o nome do modelo (ex: declaracao_de_contraturno)")
 
 if st.button("Consultar"):
     if not nome or not fase or not modelo_input:
